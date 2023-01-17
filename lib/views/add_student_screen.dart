@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:student/controller/student_image_controller.dart';
 import 'package:student/database/db_functions.dart';
 import 'package:student/database/db_model.dart';
 
@@ -27,6 +28,8 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
   final rollnumController = TextEditingController();
 
   final addressControler = TextEditingController();
+
+  final studentController = Get.put(StudentController());
 
   File? imagefile;
   final ImagePicker imgPicker = ImagePicker();
@@ -60,15 +63,28 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
 //------------------------------------------------------Image---------------------------------------------------------------
             Stack(
               children: <Widget>[
-                CircleAvatar(
-                    radius: 80.0,
-                    backgroundColor: Colors.grey,
-                    backgroundImage: imagefile != null
-                        ? FileImage(File(imagefile!.path)) as ImageProvider
-                        : NetworkImage(
-                            'https://www.inforwaves.com/media/2021/04/dummy-profile-pic-300x300-1.png')
-//-------------------------------------Position widget for placing bottom icon over the image-------------------------------
-                    ),
+                GetBuilder<StudentController>(
+                  builder: ((controller) {
+                    if (controller.imagefile == null) {
+                      return CircleAvatar(
+                          radius: 80.0,
+                          backgroundColor: Colors.grey,
+                          backgroundImage: imagefile != null
+                              ? FileImage(File(imagefile!.path))
+                                  as ImageProvider
+                              : NetworkImage(
+                                  'https://www.inforwaves.com/media/2021/04/dummy-profile-pic-300x300-1.png'));
+                    } else {
+                      return CircleAvatar(
+                          radius: 80.0,
+                          backgroundColor: Colors.grey,
+                          backgroundImage:
+                              FileImage(File(controller.imagefile!.path))
+                                  as ImageProvider);
+                    }
+                  }),
+                ),
+                //-------------------------------------Position widget for placing bottom icon over the image-------------------------------
                 Positioned(
                     bottom: 20.0,
                     right: 20.0,
@@ -142,7 +158,7 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            // submitButtonClicked(context);
+                            submitButtonClicked(context);
                             // Navigator.of(context).pop();
                             Get.back();
                           },
@@ -168,8 +184,8 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
     final rollNo = rollNumController.text.trim();
     final address = addressController.text.trim();
     String image;
-    if (imagefile != null) {
-      image = imagefile!.path.toString();
+    if (studentController.imagefile != null) {
+      image = studentController.imagefile!.path.toString();
     } else {
       image =
           'https://www.inforwaves.com/media/2021/04/dummy-profile-pic-300x300-1.png';
@@ -185,7 +201,8 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
           address: address,
           image: image);
 
-      addStudentTable(student);
+      //addStudentTable(student);
+      studentController.addStudent(student);
     }
   }
 
@@ -214,6 +231,7 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
 //-------------------------------------------------------Folder Option---------------------------------------------------------------
                         child: IconButton(
                           onPressed: () {
+                            //re-fresh this method
                             _getImageGallary(ImageSource.gallery);
                             Navigator.of(context).pop();
                           },
@@ -224,6 +242,7 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
 //-------------------------------------------------------Camera Option---------------------------------------------------------------
                       IconButton(
                         onPressed: () {
+                          //re-fresh this method
                           _getImageGallary(ImageSource.camera);
                           Navigator.of(context).pop();
                         },
@@ -242,12 +261,10 @@ class _AddStudentDetailsState extends State<AddStudentDetails> {
 
 //------------------------------------------------------------------------------------------------------------------------------------
   Future<void> _getImageGallary(ImageSource src) async {
-    XFile? file =
-        await imgPicker.pickImage(source: src, maxHeight: 200, maxWidth: 200);
-    if (file != null) {
-      setState(() {
-        imagefile = File(file.path);
-      });
+    if (src == ImageSource.gallery) {
+      studentController.getGallery(src);
+    } else if (src == ImageSource.camera) {
+      studentController.getCamera(src);
     }
   }
 }

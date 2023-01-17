@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:student/controller/student_image_controller.dart';
 import 'package:student/database/db_functions.dart';
 import 'package:student/database/db_model.dart';
 import 'package:student/views/add_student_screen.dart';
 import 'package:student/views/student_details.dart';
+
+final getxController = Get.put(StudentController());
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

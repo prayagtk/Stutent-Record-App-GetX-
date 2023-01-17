@@ -7,12 +7,16 @@ import 'package:student/views/add_student_screen.dart';
 import 'package:student/views/home.dart';
 import 'package:student/views/splash_screen.dart';
 
+late Box<StudentTable> studentdb;
+
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   if (!Hive.isAdapterRegistered(StudentTableAdapter().typeId)) {
     Hive.registerAdapter(StudentTableAdapter());
   }
+
+  studentdb = await Hive.openBox<StudentTable>('student_database');
   runApp(MyApp());
 }
 
